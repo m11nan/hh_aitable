@@ -6,7 +6,7 @@ from typing import Any
 import chompjs
 from curl_cffi import requests
 
-from utils.config import config
+from utils.config import get_config
 from utils.logger import setup_logger
 
 logger = setup_logger()
@@ -17,12 +17,12 @@ class HHClient:
 
     def __init__(self):
         """Загружает настройки из конфига: base_url, заголовки, таймауты, повторы."""
-        self.base_url = config.get("search_settings.base_url", "https://spb.hh.ru")
-        self.headers = config.get("request_settings.headers")
-        self.timeout = config.get("request_settings.timeout", 30)
+        self.base_url = get_config().get("search_settings.base_url", "https://spb.hh.ru")
+        self.headers = get_config().get("request_settings.headers")
+        self.timeout = get_config().get("request_settings.timeout", 30)
         self.json_marker = '{"redirectConfig"'
-        self.max_retries = config.get("request_settings.retry_settings.max_retries", 3)
-        self.backoff_factor = config.get("request_settings.retry_settings.backoff_factor", 2.0)
+        self.max_retries = get_config().get("request_settings.retry_settings.max_retries", 3)
+        self.backoff_factor = get_config().get("request_settings.retry_settings.backoff_factor", 2.0)
 
     def _get_random_delay(self, delay_key: str) -> float:
         """Возвращает случайную задержку из конфига по ключу.
@@ -33,7 +33,7 @@ class HHClient:
         Returns:
             Случайное число секунд или значение из конфига.
         """
-        delay_cfg = config.get(f"search_settings.{delay_key}")
+        delay_cfg = get_config().get(f"search_settings.{delay_key}")
         if isinstance(delay_cfg, dict):
             return random.uniform(delay_cfg.get("min", 1.0), delay_cfg.get("max", 2.0))
         return delay_cfg if isinstance(delay_cfg, (int, float)) else 1.0

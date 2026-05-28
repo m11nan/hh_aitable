@@ -7,7 +7,7 @@ from rich.prompt import Confirm
 from core.client import HHClient
 from core.parser import HHParser
 from crawler.scanner import HHScanner
-from utils.config import config
+from utils.config import get_config
 from utils.exporter import ExcelExporter
 from utils.logger import setup_logger
 
@@ -28,7 +28,7 @@ def main() -> int:
 
     # Определяем, есть ли уже данные и нужно ли обновлять
     existing_ids: set[str] | None = None
-    refresh = config.get("search_settings.refresh_existing", False)
+    refresh = get_config().get("search_settings.refresh_existing", False)
     if os.path.exists(exporter.excel_path):
         existing_ids = exporter.get_existing_ids()
         if existing_ids:
@@ -54,11 +54,11 @@ def main() -> int:
         vacancies = []
 
     if vacancies:
-        output_folder = config.get_output_folder()
+        output_folder = get_config().get_output_folder()
         os.makedirs(output_folder, exist_ok=True)
         json_file = os.path.join(
             output_folder,
-            config.get("output_settings.filename", "vacancies_full_data.json"),
+            get_config().get("output_settings.filename", "vacancies_full_data.json"),
         )
         try:
             records = [v.model_dump(by_alias=True) for v in vacancies]
@@ -73,7 +73,7 @@ def main() -> int:
         except Exception as e:
             logger.error(f"Ошибка при экспорте в Excel: {e}")
 
-        if config.get("ai_settings.enabled", False):
+        if get_config().get("ai_settings.enabled", False):
             try:
                 from utils.ai_analyzer import AIAnalyzer
 

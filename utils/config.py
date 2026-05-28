@@ -1,3 +1,4 @@
+from functools import cache
 from pathlib import Path
 from typing import Any
 
@@ -54,4 +55,11 @@ class Config:
         return self.get("output_settings.output_folder", "output")
 
 
-config = Config()
+@cache
+def get_config() -> Config:
+    """Возвращает синглтон конфигурации (ленивая инициализация).
+
+    Returns:
+        Экземпляр Config.
+    """
+    return Config()

@@ -9,7 +9,7 @@ from rich.console import Console
 from core.client import HHClient
 from core.parser import HHParser
 from models.vacancy import VacancyModel
-from utils.config import config
+from utils.config import get_config
 from utils.exporter import ExcelExporter
 from utils.logger import setup_logger
 from utils.progress_helper import make_progress
@@ -42,12 +42,13 @@ class HHScanner:
         Returns:
             Список собранных VacancyModel.
         """
-        search_url_template = config.get("search_settings.search_url_template")
-        max_pages = config.get("search_settings.max_pages", 1)
+        search_url_template = get_config().get("search_settings.search_url_template")
+        max_pages = get_config().get("search_settings.max_pages", 1)
 
         all_vacancies: list[VacancyModel] = []
 
-        logger.info("Инициализация: получение метаданных...")
+        # Первую страницу фетчим сразу — нужна для метаданных и первой порции вакансий
+        logger.info("Инициализация: получение первой страницы...")
         first_page_html = self.client.fetch_raw_html(search_url_template)
         if not first_page_html:
             logger.error("Не удалось получить HTML первой страницы.")
@@ -63,6 +64,8 @@ class HHScanner:
 
         page_count = math.ceil(total_count / 50) if total_count else 1
         effective_pages = min(page_count, max_pages) if max_pages != -1 else page_count
+
+        logger.info(f"Будет обработано страниц: {effective_pages}")
 
         with make_progress(
             "[bold cyan]Сканирование страниц",
@@ -89,25 +92,27 @@ class HHScanner:
                     if max_pages != -1 and page >= max_pages:
                         break
 
-                    parsed = urlparse(search_url_template)
-                    query = parse_qs(parsed.query, keep_blank_values=True)
-                    query["page"] = [str(page)]
-                    new_query = urlencode(query, doseq=True)
-                    url: str = urlunparse(parsed._replace(query=new_query))
+                    # Для page=0 используем уже полученные first_page_data
+                    if page == 0:
+                        page_data = first_page_data
+                    else:
+                        parsed = urlparse(search_url_template)
+                        query = parse_qs(parsed.query, keep_blank_values=True)
+                        query["page"] = [str(page)]
+                        new_query = urlencode(query, doseq=True)
+                        url: str = urlunparse(parsed._replace(query=new_query))
 
-                    page_html = self.client.fetch_raw_html(url)
-                    if not page_html:
-                        logger.warning(f"Пропуск страницы {page} из-за ошибки загрузки.")
-                        if max_pages != -1:
+                        page_html = self.client.fetch_raw_html(url)
+                        if not page_html:
+                            logger.warning(f"Пропуск страницы {page} из-за ошибки загрузки.")
                             page_progress.advance(page_task)
-                        continue
-                    page_data = self.client.fetch_json_from_html(page_html)
+                            continue
+                        page_data = self.client.fetch_json_from_html(page_html)
 
-                    if not page_data:
-                        logger.warning(f"Пропуск страницы {page} из-за ошибки.")
-                        if max_pages != -1:
+                        if not page_data:
+                            logger.warning(f"Пропуск страницы {page} из-за ошибки.")
                             page_progress.advance(page_task)
-                        continue
+                            continue
 
                     vacancies_raw = self.parser.get_vacancies(page_data)
                     if not vacancies_raw:
@@ -178,7 +183,8 @@ class HHScanner:
                         time.sleep(self.client._get_random_delay("delay_between_vacancies"))
 
                     page_progress.advance(page_task)
-                    time.sleep(self.client._get_random_delay("delay_between_pages"))
+                    if page > 0:
+                        time.sleep(self.client._get_random_delay("delay_between_pages"))
                     page += 1
 
         return all_vacancies

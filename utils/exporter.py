@@ -7,7 +7,7 @@ from typing import Any
 import pandas as pd
 
 from models.vacancy import VacancyModel
-from utils.config import config
+from utils.config import get_config
 from utils.logger import setup_logger
 from utils.progress_helper import make_progress
 
@@ -19,19 +19,19 @@ class ExcelExporter:
 
     def __init__(self):
         """Загружает настройки путей из конфига, создаёт папку вывода."""
-        self.output_folder = config.get_output_folder()
+        self.output_folder = get_config().get_output_folder()
         os.makedirs(self.output_folder, exist_ok=True)
 
         self.excel_path = os.path.join(
             self.output_folder,
-            config.get("output_settings.excel_filename", "report.xlsx"),
+            get_config().get("output_settings.excel_filename", "report.xlsx"),
         )
         self.json_path = os.path.join(
             self.output_folder,
-            config.get("output_settings.filename", "vacancies_full_data.json"),
+            get_config().get("output_settings.filename", "vacancies_full_data.json"),
         )
 
-        self.header_color = config.get("output_settings.header_color_hex", "#C1E1C1")
+        self.header_color = get_config().get("output_settings.header_color_hex", "#C1E1C1")
 
     def _clean_html(self, html_content: str | None) -> str:
         """Удаляет HTML-теги и декодирует HTML-entities.

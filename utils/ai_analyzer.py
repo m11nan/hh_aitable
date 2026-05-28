@@ -10,7 +10,7 @@ import pandas as pd
 from openpyxl import load_workbook
 from rich.prompt import Confirm
 
-from utils.config import config
+from utils.config import get_config
 from utils.logger import setup_logger
 from utils.progress_helper import make_progress
 
@@ -59,25 +59,25 @@ class AIAnalyzer:
 
     def __init__(self):
         """Загружает настройки модели и промптов из конфига."""
-        self.model_path = config.get("ai_settings.model.path", "models/model.gguf")
-        self.n_gpu_layers = config.get("ai_settings.model.n_gpu_layers", -1)
-        self.n_ctx = config.get("ai_settings.model.n_ctx", 8192)
-        self.cache_type = config.get("ai_settings.model.cache_type", "q8_0")
-        self.flash_attn = config.get("ai_settings.model.flash_attn", True)
-        self.max_tokens = config.get("ai_settings.inference.max_tokens", 1500)
-        self.temperature = config.get("ai_settings.inference.temperature", 0.1)
-        self.top_p = config.get("ai_settings.inference.top_p", 0.95)
-        self.delay_between = config.get("ai_settings.inference.delay_between", 0.5)
-        self.batch_save_interval = config.get("ai_settings.inference.batch_save_interval", 10)
-        self.competition_threshold = config.get(
+        self.model_path = get_config().get("ai_settings.model.path", "models/model.gguf")
+        self.n_gpu_layers = get_config().get("ai_settings.model.n_gpu_layers", -1)
+        self.n_ctx = get_config().get("ai_settings.model.n_ctx", 8192)
+        self.cache_type = get_config().get("ai_settings.model.cache_type", "q8_0")
+        self.flash_attn = get_config().get("ai_settings.model.flash_attn", True)
+        self.max_tokens = get_config().get("ai_settings.inference.max_tokens", 1500)
+        self.temperature = get_config().get("ai_settings.inference.temperature", 0.1)
+        self.top_p = get_config().get("ai_settings.inference.top_p", 0.95)
+        self.delay_between = get_config().get("ai_settings.inference.delay_between", 0.5)
+        self.batch_save_interval = get_config().get("ai_settings.inference.batch_save_interval", 10)
+        self.competition_threshold = get_config().get(
             "ai_settings.calculation.competition_threshold", 200
         )
-        self.reviews_threshold = config.get("ai_settings.calculation.reviews_threshold", 100)
-        self.system_prompt = config.get(
+        self.reviews_threshold = get_config().get("ai_settings.calculation.reviews_threshold", 100)
+        self.system_prompt = get_config().get(
             "ai_settings.prompt.system",
             "Ты — строгий аналитик вакансий.",
         )
-        self.user_prompt_template = config.get("ai_settings.prompt.user", "")
+        self.user_prompt_template = get_config().get("ai_settings.prompt.user", "")
 
         self._llm: Any = None
         self._llm_available: bool | None = None
