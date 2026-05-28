@@ -15,8 +15,9 @@ output/*
 # Debug data
 raw.json
 
-# Models (user downloads)
-models/
+# Models (user downloads) — ignore GGUF binary files, track the Python package
+models/*.gguf
+models/**/*.gguf
 
 # IDE
 .vscode/
