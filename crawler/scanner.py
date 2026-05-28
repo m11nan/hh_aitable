@@ -119,6 +119,8 @@ class HHScanner:
                         logger.info(f"Больше вакансий не найдено на странице {page}. Завершаем.")
                         break
 
+                    page_skipped = 0
+                    page_fetched = 0
                     for v_raw in vacancies_raw:
                         vacancy = self.parser.parse_vacancy(v_raw)
                         vacancy_id = str(v_raw.get("id", ""))
@@ -130,6 +132,7 @@ class HHScanner:
                                 vacancy.description = None
                                 all_vacancies.append(vacancy)
                                 vacancy_progress.advance(vacancy_task)
+                                page_skipped += 1
                                 continue
 
                             # refresh: сравниваем новое описание со старым
@@ -138,6 +141,8 @@ class HHScanner:
                                 if self.exporter
                                 else None
                             )
+
+                        page_fetched += 1
 
                         detail_url = v_raw.get("links", {}).get("desktop")
                         if detail_url:
@@ -181,6 +186,12 @@ class HHScanner:
                         all_vacancies.append(vacancy)
                         vacancy_progress.advance(vacancy_task)
                         time.sleep(self.client._get_random_delay("delay_between_vacancies"))
+
+                    if page_skipped or page_fetched:
+                        logger.info(
+                            f"Страница {page}: {page_skipped} вакансий пропущено"
+                            f"{f', {page_fetched} загружено' if page_fetched else ''}"
+                        )
 
                     page_progress.advance(page_task)
                     if page > 0:
