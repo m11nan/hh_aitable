@@ -43,9 +43,7 @@ def _ensure_cuda_paths():
             paths.append(d)
             os.add_dll_directory(d)
     if paths:
-        os.environ["PATH"] = (
-            os.pathsep.join(paths) + os.pathsep + os.environ.get("PATH", "")
-        )
+        os.environ["PATH"] = os.pathsep.join(paths) + os.pathsep + os.environ.get("PATH", "")
 
     cuda_path = os.environ.get("CUDA_PATH", "")
     if cuda_path and not os.path.exists(os.path.join(cuda_path, "bin")):
@@ -70,15 +68,11 @@ class AIAnalyzer:
         self.temperature = config.get("ai_settings.inference.temperature", 0.1)
         self.top_p = config.get("ai_settings.inference.top_p", 0.95)
         self.delay_between = config.get("ai_settings.inference.delay_between", 0.5)
-        self.batch_save_interval = config.get(
-            "ai_settings.inference.batch_save_interval", 10
-        )
+        self.batch_save_interval = config.get("ai_settings.inference.batch_save_interval", 10)
         self.competition_threshold = config.get(
             "ai_settings.calculation.competition_threshold", 200
         )
-        self.reviews_threshold = config.get(
-            "ai_settings.calculation.reviews_threshold", 100
-        )
+        self.reviews_threshold = config.get("ai_settings.calculation.reviews_threshold", 100)
         self.system_prompt = config.get(
             "ai_settings.prompt.system",
             "Ты — строгий аналитик вакансий.",
@@ -112,9 +106,7 @@ class AIAnalyzer:
                 "llama-cpp-python не установлен. Выполни: uv pip install llama-cpp-python"
             )
         if not self._has_gpu:
-            logger.warning(
-                "GPU offload не поддерживается. Работаем на CPU — будет медленно."
-            )
+            logger.warning("GPU offload не поддерживается. Работаем на CPU — будет медленно.")
 
     def _get_model(self):
         """Загружает и возвращает модель llama.cpp (ленивая инициализация).
@@ -145,9 +137,7 @@ class AIAnalyzer:
             logger.info("Модель загружена")
         return self._llm
 
-    def _calculate_trust_factor(
-        self, rating: float | None, reviews: int | None
-    ) -> float:
+    def _calculate_trust_factor(self, rating: float | None, reviews: int | None) -> float:
         """Считает фактор доверия к компании на основе рейтинга и отзывов.
 
         Args:
@@ -194,7 +184,9 @@ class AIAnalyzer:
         total_responses = row.get("Отклики_Всего", 0)
         if total_responses is None:
             total_responses = 0
-        total_responses_int: int | None = total_responses if not isinstance(total_responses, str) else None
+        total_responses_int: int | None = (
+            total_responses if not isinstance(total_responses, str) else None
+        )
         rating_float: float | None = float(rating) if rating is not None else None
         reviews_int: int | None = int(reviews) if reviews is not None else None
         trust_factor = self._calculate_trust_factor(rating_float, reviews_int)
@@ -329,9 +321,7 @@ class AIAnalyzer:
                 df.to_excel(writer, index=False, sheet_name="Вакансии")
             wb.close()
         else:
-            with pd.ExcelWriter(
-                excel_path, engine="openpyxl", mode="w"
-            ) as writer:
+            with pd.ExcelWriter(excel_path, engine="openpyxl", mode="w") as writer:
                 df.to_excel(writer, index=False, sheet_name="Вакансии")
 
     def analyze(self, excel_path: str):
@@ -350,9 +340,7 @@ class AIAnalyzer:
         df = pd.read_excel(excel_path, engine="openpyxl")
 
         if "Ссылка" not in df.columns:
-            logger.warning(
-                "В Excel нет колонки 'Ссылка'. Невозможно определить вакансии."
-            )
+            logger.warning("В Excel нет колонки 'Ссылка'. Невозможно определить вакансии.")
             return
 
         for col in AI_COLUMNS:
@@ -367,9 +355,7 @@ class AIAnalyzer:
             logger.info("Все вакансии уже проанализированы.")
             return
 
-        logger.info(
-            f"Найдено {len(rows_to_analyze)} вакансий для AI-анализа (из {len(df)})."
-        )
+        logger.info(f"Найдено {len(rows_to_analyze)} вакансий для AI-анализа (из {len(df)}).")
 
         if not Confirm.ask(
             f"[bold yellow]Запустить AI-анализ для {len(rows_to_analyze)} вакансий?[/]",
@@ -404,17 +390,14 @@ class AIAnalyzer:
                     )
 
                     raw_output = (
-                        response.get("choices", [{}])[0]
-                        .get("message", {})
-                        .get("content", "")
+                        response.get("choices", [{}])[0].get("message", {}).get("content", "")
                     )
 
                     parsed = self._parse_llm_response(raw_output)
 
                     if parsed is None:
                         raise ValueError(
-                            f"Не удалось распарсить ответ LLM. "
-                            f"Сырой ответ: {raw_output[:200]}"
+                            f"Не удалось распарсить ответ LLM. Сырой ответ: {raw_output[:200]}"
                         )
 
                     score = parsed.get("overall_score", 0)
@@ -432,9 +415,7 @@ class AIAnalyzer:
                     time.sleep(self.delay_between)
 
                 except Exception as e:
-                    logger.error(
-                        f"Ошибка AI-анализа вакансии {row.get('Вакансия', '?')}: {e}"
-                    )
+                    logger.error(f"Ошибка AI-анализа вакансии {row.get('Вакансия', '?')}: {e}")
                     error_info = self._default_error_result(str(e))
                     df.at[orig_idx, "AI_Score"] = error_info["overall_score"]
                     df.at[orig_idx, "AI_Verdict"] = error_info["explanation"]
@@ -445,15 +426,12 @@ class AIAnalyzer:
 
                 if done_count > 0 and done_count % self.batch_save_interval == 0:
                     self._save_excel(df, excel_path)
-                    logger.info(
-                        f"Промежуточное сохранение: {done_count}/{len(rows_to_analyze)}"
-                    )
+                    logger.info(f"Промежуточное сохранение: {done_count}/{len(rows_to_analyze)}")
 
         self._save_excel(df, excel_path)
 
         ok_count = (df["AI_Status"] == "ok").sum()
         err_count = (df["AI_Status"] == "error").sum()
         logger.info(
-            f"AI-анализ завершён. Успешно: {ok_count}, Ошибок: {err_count}. "
-            f"Файл: {excel_path}"
+            f"AI-анализ завершён. Успешно: {ok_count}, Ошибок: {err_count}. Файл: {excel_path}"
         )

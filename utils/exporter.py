@@ -45,9 +45,7 @@ class ExcelExporter:
         if not html_content:
             return ""
         html_content = html.unescape(html_content)
-        html_content = re.sub(
-            r"</p>|</li>|<br\s*/?>", "\n", html_content, flags=re.IGNORECASE
-        )
+        html_content = re.sub(r"</p>|</li>|<br\s*/?>", "\n", html_content, flags=re.IGNORECASE)
         clean_text = re.sub(r"<[^>]*>", "", html_content)
         clean_text = re.sub(r"[ \t]+", " ", clean_text)
         clean_text = re.sub(r"\n+", "\n", clean_text).strip()
@@ -166,9 +164,7 @@ class ExcelExporter:
             return
 
         existing_ids = self.get_existing_ids()
-        new_vacancies = [
-            v for v in vacancies if self._get_id(v) not in existing_ids
-        ]
+        new_vacancies = [v for v in vacancies if self._get_id(v) not in existing_ids]
 
         if not new_vacancies:
             logger.info("Новых вакансий для записи не найдено.")
@@ -184,9 +180,7 @@ class ExcelExporter:
             text_style="magenta",
             bar_style="magenta",
         ) as prog:
-            write_task = prog.add_task(
-                "Запись новых вакансий", total=len(new_vacancies)
-            )
+            write_task = prog.add_task("Запись новых вакансий", total=len(new_vacancies))
             rows = []
 
             for v in new_vacancies:
@@ -219,15 +213,13 @@ class ExcelExporter:
                     "ДТС (создание)": self._format_date(v.creation_date),
                     "ДТП (публикация)": self._format_date(v.publication_date),
                     "ДТО (обновление)": self._format_date(v.update_date),
-                    "ДТ (сканирования)": datetime.datetime.now().strftime(
-                        "%d.%m.%Y %H:%M:%S"
-                    ),
+                    "ДТ (сканирования)": datetime.datetime.now().strftime("%d.%m.%Y %H:%M:%S"),
                     "Описание": self._clean_html(v.description),
                     "Ссылка": v.vacancy_link,
-                    "Поднятие": "Да" if v.publication_type and "HH_AUTO_RENEWAL" in v.publication_type else "Нет",
-                    "Автоответы": "Включено"
-                    if v.accepts_auto_response
-                    else "Выключено",
+                    "Поднятие": "Да"
+                    if v.publication_type and "HH_AUTO_RENEWAL" in v.publication_type
+                    else "Нет",
+                    "Автоответы": "Включено" if v.accepts_auto_response else "Выключено",
                     "Аргументы": v.publication_type,
                     "AI_Score": None,
                     "AI_Verdict": None,

@@ -57,10 +57,7 @@ class TestParseLlmResponse:
         assert result["explanation"] == "Good"
 
     def test_with_markdown_code_block(self, analyzer):
-        text = (
-            '```json\n{"overall_score": 80, "explanation": "Nice", '
-            '"is_shitty": false}\n```'
-        )
+        text = '```json\n{"overall_score": 80, "explanation": "Nice", "is_shitty": false}\n```'
         result = analyzer._parse_llm_response(text)
         assert result["overall_score"] == 80
 

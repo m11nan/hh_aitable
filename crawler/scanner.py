@@ -71,9 +71,7 @@ class HHScanner:
             bar_style="cyan",
             console=self.console,
         ) as page_progress:
-            page_task = page_progress.add_task(
-                "[bold cyan]Страницы", total=effective_pages
-            )
+            page_task = page_progress.add_task("[bold cyan]Страницы", total=effective_pages)
 
             with make_progress(
                 "[bold magenta]Обработка вакансий",
@@ -113,9 +111,7 @@ class HHScanner:
 
                     vacancies_raw = self.parser.get_vacancies(page_data)
                     if not vacancies_raw:
-                        logger.info(
-                            f"Больше вакансий не найдено на странице {page}. Завершаем."
-                        )
+                        logger.info(f"Больше вакансий не найдено на странице {page}. Завершаем.")
                         break
 
                     for v_raw in vacancies_raw:
@@ -148,9 +144,9 @@ class HHScanner:
                             else:
                                 detail_data = self.client.fetch_json_from_html(detail_html)
                             if detail_data:
-                                vacancy.description = detail_data.get(
-                                    "vacancyView", {}
-                                ).get("description")
+                                vacancy.description = detail_data.get("vacancyView", {}).get(
+                                    "description"
+                                )
                             else:
                                 vacancy.description = "Не удалось загрузить описание"
                         else:
@@ -163,17 +159,23 @@ class HHScanner:
                             and refresh
                             and old_desc is not None
                         ):
-                            old_clean = html_mod.unescape(re.sub(r"<[^>]*>", "", old_desc)) if old_desc else ""
-                            new_clean = html_mod.unescape(re.sub(r"<[^>]*>", "", vacancy.description or "")) if vacancy.description else ""
+                            old_clean = (
+                                html_mod.unescape(re.sub(r"<[^>]*>", "", old_desc))
+                                if old_desc
+                                else ""
+                            )
+                            new_clean = (
+                                html_mod.unescape(re.sub(r"<[^>]*>", "", vacancy.description or ""))
+                                if vacancy.description
+                                else ""
+                            )
                             if old_clean.strip() == new_clean.strip():
                                 vacancy_progress.advance(vacancy_task)
                                 continue
 
                         all_vacancies.append(vacancy)
                         vacancy_progress.advance(vacancy_task)
-                        time.sleep(
-                            self.client._get_random_delay("delay_between_vacancies")
-                        )
+                        time.sleep(self.client._get_random_delay("delay_between_vacancies"))
 
                     page_progress.advance(page_task)
                     time.sleep(self.client._get_random_delay("delay_between_pages"))

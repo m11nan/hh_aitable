@@ -1,76 +1,79 @@
-# hh_scraper
+# hh_aitable
 
 Парсер вакансий с [HH.ru](https://hh.ru) с AI-анализом на локальной LLM.
 
-Собирает вакансии по заданным фильтрам, сохраняет в Excel, затем
-прогоняет через локальную LLM (llama.cpp) для оценки каждой вакансии.
+Собирает вакансии по фильтрам, сохраняет в Excel, затем прогоняет через LLM
+(llama.cpp) для оценки каждой вакансии.
 
 ---
 
 ## Требования
 
 - **Python** 3.11+
-- **NVIDIA GPU** с драйвером 12.x+ (рекомендуется, но не обязательно — будет работать на CPU)
 - **UV** — менеджер пакетов (`pip install uv`)
+- **NVIDIA GPU** с драйвером 12.x+ (рекомендуется, но CPU тоже работает)
 
 ---
 
 ## Установка
 
 ```bash
-# Клонируем репозиторий
-git clone https://github.com/m11nan/hh_scraper
-cd hh_scraper
-
-# Устанавливаем зависимости
+git clone https://github.com/m11nan/hh_aitable.git
+cd hh_aitable
 uv sync
-
-# Настраиваем конфиг
 cp config.example.yaml config.yaml
-# Отредактируйте config.yaml под себя (см. ниже)
+# Отредактируйте config.yaml под себя
 ```
 
 ---
 
-## Конфигурация
+## Конфигурация (`config.yaml`)
 
-Скопируйте `config.example.yaml` в `config.yaml` и настройте:
+| Параметр | Описание |
+|---|---|
+| `search_settings.search_url_template` | URL поиска HH.ru (свои фильтры) |
+| `search_settings.max_pages` | Количество страниц (`-1` = все) |
+| `search_settings.refresh_existing` | `false` — быстрый повторный запуск (без перезапроса описаний). `true` — запросить обновление у пользователя |
+| `ai_settings.enabled` | Включить AI-анализ после сбора |
+| `ai_settings.model.path` | Путь к GGUF-модели |
 
-- **search_settings.search_url_template** — URL поиска HH.ru (свои фильтры)
-- **search_settings.max_pages** — количество страниц для сканирования
-- **ai_settings.enabled** — `true` / `false`
-- **ai_settings.model.path** — путь к GGUF-модели (для AI-анализа)
-- Остальные параметры имеют разумные значения по умолчанию
+Остальные параметры имеют разумные значения по умолчанию.
 
 ---
 
 ## Использование
 
 ```bash
-uv run python main.py
+uv run main.py
 ```
 
-Без AI-анализа (если модель не готова):
+**Повторный запуск** — новые вакансии добавляются, известные пропускаются
+(без повторного обхода описаний).
+
+**Принудительное обновление** — в `config.yaml` поставить `refresh_existing: true`.
+При запуске будет вопрос: обновить данные по существующим вакансиям?
 
 ```bash
+# Без AI-анализа (если модель ещё не готова)
 # В config.yaml: ai_settings.enabled: false
-uv run python main.py
+uv run main.py
 ```
 
 ---
 
-## Структура проекта
+## Структура
 
 ```
-hh_scraper/
-├── core/           # Сетевой клиент и парсер HTML/JSON
-├── crawler/        # Оркестрация сканирования
-├── models/         # Pydantic-модели данных
-├── utils/          # Экспорт, AI-анализ, конфиг, логирование
-├── tests/          # Тесты (pytest)
-├── config.example.yaml  # Шаблон конфига
-├── main.py         # Точка входа
-└── pyproject.toml  # Зависимости и инструменты
+hh_aitable/
+├── core/                 # Сетевой клиент + парсер HTML/JSON
+├── crawler/              # Оркестрация сканирования (пагинация, прогресс-бары)
+├── models/               # Pydantic-модели данных
+├── utils/                # Экспорт, AI-анализ, конфиг, логирование
+├── tests/                # Тесты (pytest)
+├── .github/workflows/    # CI (ruff → basedpyright → pytest)
+├── config.example.yaml   # Шаблон конфига (без личных данных)
+├── main.py               # Точка входа
+└── pyproject.toml        # Зависимости и инструменты
 ```
 
 ---
@@ -78,14 +81,9 @@ hh_scraper/
 ## Разработка
 
 ```bash
-# Линтер
-uv run ruff check
-
-# Тип-чекер
-uv run basedpyright
-
-# Тесты
-uv run pytest
+uv run ruff check          # Линтер
+uv run basedpyright        # Тип-чекер
+uv run pytest              # Тесты
 ```
 
 ---

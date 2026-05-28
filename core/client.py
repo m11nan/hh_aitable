@@ -22,9 +22,7 @@ class HHClient:
         self.timeout = config.get("request_settings.timeout", 30)
         self.json_marker = '{"redirectConfig"'
         self.max_retries = config.get("request_settings.retry_settings.max_retries", 3)
-        self.backoff_factor = config.get(
-            "request_settings.retry_settings.backoff_factor", 2.0
-        )
+        self.backoff_factor = config.get("request_settings.retry_settings.backoff_factor", 2.0)
 
     def _get_random_delay(self, delay_key: str) -> float:
         """Возвращает случайную задержку из конфига по ключу.

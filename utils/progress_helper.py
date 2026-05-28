@@ -31,9 +31,7 @@ def make_progress(
     """
     cols = [
         TextColumn(f"[bold {text_style}]{{task.description}}"),
-        BarColumn(
-            bar_width=None, complete_style=bar_style, finished_style=f"bold {bar_style}"
-        ),
+        BarColumn(bar_width=None, complete_style=bar_style, finished_style=f"bold {bar_style}"),
         TaskProgressColumn(),
         TextColumn("{task.completed}/{task.total}"),
         TimeRemainingColumn(),

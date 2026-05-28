@@ -17,9 +17,7 @@ class TestCleanHtml:
         assert result == "Line1\nLine2"
 
     def test_removes_entity_escaped_tags(self, exporter):
-        result = exporter._clean_html(
-            "&lt;strong&gt;Bold&lt;/strong&gt;"
-        )
+        result = exporter._clean_html("&lt;strong&gt;Bold&lt;/strong&gt;")
         assert result == "Bold"
         assert "<strong>" not in result
 
@@ -51,20 +49,10 @@ class TestCleanHtml:
 
 class TestGetIdFromUrl:
     def test_from_link(self, exporter):
-        assert (
-            exporter._get_id_from_url(
-                "https://spb.hh.ru/vacancy/123456"
-            )
-            == "123456"
-        )
+        assert exporter._get_id_from_url("https://spb.hh.ru/vacancy/123456") == "123456"
 
     def test_from_link_with_slash(self, exporter):
-        assert (
-            exporter._get_id_from_url(
-                "https://spb.hh.ru/vacancy/123456/"
-            )
-            == "123456"
-        )
+        assert exporter._get_id_from_url("https://spb.hh.ru/vacancy/123456/") == "123456"
 
     def test_from_link_empty(self, exporter):
         assert exporter._get_id_from_url("") == ""

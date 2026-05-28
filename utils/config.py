@@ -21,9 +21,7 @@ class Config:
             FileNotFoundError: Если файл не найден.
         """
         if not self.config_path.exists():
-            raise FileNotFoundError(
-                f"Конфигурационный файл не найден: {self.config_path}"
-            )
+            raise FileNotFoundError(f"Конфигурационный файл не найден: {self.config_path}")
 
         with open(self.config_path, encoding="utf-8") as f:
             return yaml.safe_load(f)
