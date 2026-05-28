@@ -128,7 +128,7 @@ class HHScanner:
                     page_fetched = 0
                     for v_raw in vacancies_raw:
                         vacancy = self.parser.parse_vacancy(v_raw)
-                        vacancy_id = str(v_raw.get("id", ""))
+                        vacancy_id = str(v_raw.get("vacancyId", ""))
                         old_desc: str | None = None
 
                         # Если вакансия уже известна — скипаем детальный обход

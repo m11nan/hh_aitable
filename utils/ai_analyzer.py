@@ -176,19 +176,29 @@ class AIAnalyzer:
             Готовый промпт.
         """
         rating = row.get("Рейтинг")
-        if isinstance(rating, str) and rating == "N/A":
+        if rating is None or (isinstance(rating, float) and math.isnan(rating)):
+            rating = None
+        elif isinstance(rating, str) and rating == "N/A":
             rating = None
         reviews = row.get("Отзывы")
-        if isinstance(reviews, str) and reviews == "N/A":
-            reviews = None
+        reviews_int: int | None
+        if reviews is None:
+            reviews_int = None
+        elif isinstance(reviews, str) and reviews == "N/A":
+            reviews_int = None
+        elif isinstance(reviews, float) and (math.isnan(reviews) or math.isinf(reviews)):
+            reviews_int = None
+        else:
+            reviews_int = int(reviews)
         total_responses = row.get("Отклики_Всего", 0)
-        if total_responses is None:
+        if total_responses is None or (
+            isinstance(total_responses, float) and math.isnan(total_responses)
+        ):
             total_responses = 0
         total_responses_int: int | None = (
-            total_responses if not isinstance(total_responses, str) else None
+            int(total_responses) if not isinstance(total_responses, str) else None
         )
         rating_float: float | None = float(rating) if rating is not None else None
-        reviews_int: int | None = int(reviews) if reviews is not None else None
         trust_factor = self._calculate_trust_factor(rating_float, reviews_int)
         competition_factor = self._calculate_competition_factor(total_responses_int)
 
@@ -401,12 +411,14 @@ class AIAnalyzer:
                         )
 
                     score = parsed.get("overall_score", 0)
-                    if not isinstance(score, (int, float)) or (
-                        isinstance(score, float) and math.isnan(score)
-                    ):
+                    try:
+                        score = int(float(score))
+                    except (ValueError, TypeError):
+                        score = 0
+                    if math.isinf(score) or math.isnan(score):
                         score = 0
 
-                    df.at[orig_idx, "AI_Score"] = int(score)
+                    df.at[orig_idx, "AI_Score"] = score
                     df.at[orig_idx, "AI_Verdict"] = parsed.get("explanation", "")
                     df.at[orig_idx, "AI_Status"] = "ok"
                     df.at[orig_idx, "AI_Error"] = None
