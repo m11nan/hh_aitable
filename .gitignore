@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
+# Virtual environment
+.venv/
+
+# Output data (gitignored but directory kept)
+output/
+output/*
+
+# Debug data
+raw.json
+
+# Models (user downloads)
+models/
+
+# IDE
+.vscode/
+.idea/
+
+# Linters / formatters
+.ruff_cache/
+.pytest_cache/
+
+# Config (contains personal data — use config.example.yaml as template)
+config.yaml
+
+# OS
+.DS_Store
+Thumbs.db

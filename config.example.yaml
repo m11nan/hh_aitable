@@ -1,0 +1,84 @@
+# Конфигурация парсера HH.ru
+# Скопируй этот файл в config.yaml и заполни свои значения.
+
+search_settings:
+    base_url: "https://spb.hh.ru"
+    search_url_template: "https://spb.hh.ru/search/vacancy?ored_clusters=true&enable_snippets=true&work_format=REMOTE&area=2&area=1&search_field=name&salary=50000&experience=between1And3&label=with_salary&label=not_from_agency&page=0"
+    max_pages: 1
+    refresh_existing: false
+    delay_between_pages:
+        min: 1.5
+        max: 4.0
+    delay_between_vacancies:
+        min: 0.5
+        max: 1.5
+
+request_settings:
+    headers:
+        User-Agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+        Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+        Accept-Language: "ru-RU,ru;q=0.9"
+    timeout: 30
+    retry_settings:
+        max_retries: 3
+        backoff_factor: 2.0
+
+output_settings:
+    output_folder: "output"
+    filename: "vacancies_full_data.json"
+    excel_filename: "vacancies_report.xlsx"
+    header_color_hex: "#C1E1C1"
+
+ai_settings:
+    enabled: false
+    model:
+        path: "models/model.gguf"
+        n_gpu_layers: -1
+        n_ctx: 8192
+        cache_type: "q8_0"
+        flash_attn: true
+    inference:
+        max_tokens: 1500
+        temperature: 0.1
+        top_p: 0.95
+        delay_between: 0.5
+        batch_save_interval: 10
+    calculation:
+        competition_threshold: 200
+        reviews_threshold: 100
+    prompt:
+        system: >
+            Ты — строгий аналитик вакансий. Анализируй данные о вакансии и предварительно
+            вычисленные метрики. Верни ТОЛЬКО валидный JSON без markdown-разметки и
+            лишнего текста.
+        user: >
+            Проанализируй вакансию.
+
+            Предварительно вычисленные метрики:
+            - Trust Factor: {trust_factor:.2f} (0-1, где 1 = высокая надёжность компании на основе рейтинга и количества отзывов)
+            - Competition Factor: {competition_factor:.2f} (0-1, где 1 = низкая конкуренция, мало откликов)
+            - Проверенный работодатель: {is_trusted}
+            - ИТ-аккредитация: {is_accredited}
+            - Тип трудового договора: {employment_type}
+            - Тип зарплаты: {salary_type}
+            - Зарплата: от {salary_from} до {salary_to} {currency}
+            - Всего откликов: {total_responses}
+
+            Данные вакансии (JSON):
+            {vacancy_json}
+
+            Оцени вакансию по следующим критериям (каждый от 0 до 10):
+            1. salary_market_fit — насколько указанная зарплата соответствует рынку для этой должности и города
+            2. salary_consistency — нет ли противоречий между указанной ЗП и описанием
+            3. kpi_clarity — насколько прозрачно описаны KPI и проценты
+            4. description_logic — насколько описание логично и связно
+            5. description_originality — насколько описание нешаблонное
+            6. overall_verdict — общее впечатление о вакансии
+
+            Также верни:
+            - overall_score: от 0 до 100 — итоговая оценка вакансии (учти все метрики)
+            - is_shitty: true/false
+            - explanation: краткое обоснование на русском (2-3 предложения)
+
+            Формат ответа (только JSON, без markdown):
+            {{"salary_market_fit": int, "salary_consistency": int, "kpi_clarity": int, "description_logic": int, "description_originality": int, "overall_verdict": int, "overall_score": int, "is_shitty": bool, "explanation": "string"}}

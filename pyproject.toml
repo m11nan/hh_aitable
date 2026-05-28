@@ -1,0 +1,67 @@
+[project]
+name = "hh_scraper"
+version = "0.1.0"
+description = "Парсер и AI-аналитик вакансий HH.ru"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "m11nan", email = "miinan.ac.07@gmail.com"},
+]
+keywords = ["hh", "scraper", "vacancy", "parser", "ai", "llm"]
+requires-python = ">=3.11"
+dependencies = [
+    "curl-cffi>=0.15.0",
+    "chompjs>=1.4.1",
+    "loguru>=0.7.3",
+    "pandas>=3.0.3",
+    "openpyxl>=3.1.5",
+    "xlsxwriter>=3.2.9",
+    "pyyaml>=6.0.3",
+    "rich>=15.0.0",
+    "pydantic>=2.13.4",
+    "llama-cpp-python>=0.3.23",
+    "nvidia-cuda-runtime-cu12>=12.9.79",
+    "nvidia-cublas-cu12>=12.9.2.10",
+]
+
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["core*", "crawler*", "models*", "utils*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["F", "E", "W", "I", "N", "UP"]
+ignore = [
+    "E501",  # line too long (handled by formatter)
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.basedpyright]
+typeCheckingMode = "standard"
+pythonVersion = "3.11"
+venvPath = "."
+venv = ".venv"
+reportMissingTypeStubs = false
+reportUnknownMemberType = false
+reportUnknownParameterType = false
+reportUnknownArgumentType = false
+reportUnknownVariableType = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[dependency-groups]
+dev = [
+    "basedpyright>=1.39.6",
+    "ruff>=0.15.14",
+]
