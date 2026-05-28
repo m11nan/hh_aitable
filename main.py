@@ -29,8 +29,12 @@ def main() -> int:
     # Определяем, есть ли уже данные и нужно ли обновлять
     existing_ids: set[str] | None = None
     refresh = get_config().get("search_settings.refresh_existing", False)
+
+    logger.info(f"Путь к Excel: {exporter.excel_path}")
     if os.path.exists(exporter.excel_path):
+        logger.info("Excel файл существует, загружаю ID...")
         existing_ids = exporter.get_existing_ids()
+        logger.info(f"Загружено ID: {len(existing_ids)}")
         if existing_ids:
             if refresh:
                 if not Confirm.ask(
@@ -43,6 +47,8 @@ def main() -> int:
                 f"Найдено {len(existing_ids)} существующих вакансий. "
                 f"{'Будет выполнено обновление.' if refresh else 'Новые вакансии будут добавлены без повторного обхода.'}"
             )
+    else:
+        logger.warning("Excel файл не найден — existing_ids будет None")
 
     try:
         vacancies = scanner.scan(existing_ids=existing_ids, refresh=refresh)

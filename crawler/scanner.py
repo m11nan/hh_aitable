@@ -45,6 +45,11 @@ class HHScanner:
         search_url_template = get_config().get("search_settings.search_url_template")
         max_pages = get_config().get("search_settings.max_pages", 1)
 
+        if existing_ids:
+            logger.info(f"Загружено {len(existing_ids)} существующих ID вакансий")
+        else:
+            logger.info("existing_ids не переданы — все вакансии будут загружены")
+
         all_vacancies: list[VacancyModel] = []
 
         # Первую страницу фетчим сразу — нужна для метаданных и первой порции вакансий
