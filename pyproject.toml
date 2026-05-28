@@ -63,5 +63,6 @@ testpaths = ["tests"]
 [dependency-groups]
 dev = [
     "basedpyright>=1.39.6",
+    "pytest>=9.0.3",
     "ruff>=0.15.14",
 ]
